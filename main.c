@@ -11,6 +11,7 @@ t_tree buildTree( int , int , t_localisation , t_map);
 void buildBranch( t_node* , t_move* , int , int , t_localisation , t_map);
 t_move* buildRandomMovesArray(int);
 t_move* removeMoveFromArray(t_move* , t_move , int);
+void displayMoveset(t_move* , int);
 
 
 int main() {
@@ -42,11 +43,12 @@ int main() {
             printf("%-5d ", map.costs[i][j]);
             if(map.costs[i][j]==0){
                 rover = loc_init(i , j , NORTH);
-                buildTree(5 , 3 , rover , map);
+                
             }
         }
         printf("\n");
     }
+    buildTree(5 , 3 , rover , map);
     displayMap(map);
     return 0;
 }
@@ -75,25 +77,41 @@ t_tree buildTree(int moveset_length , int moves_amount , t_localisation localisa
 }
 
 void buildBranch(t_node* node , t_move* moveset , int moveset_length , int moves_amount , t_localisation localisation , t_map map){
-    printf("\n");
+    
     setChildren(node , moveset_length);
     for(int i=0 ; i<moveset_length ; i++){
+        printf("\n\n\n");
+        displayMoveset(moveset , moveset_length);
         printf("moveset length: %d\n" , moveset_length);
         t_node tmpnode;
         printf("node initilized\n");
         t_move* node_move;
-        node_move = (t_move*)malloc(sizeof(t_move)*node->movelist_length);
-        printf("random move from moveset chosen: %s\n" , getMoveAsString(*(node_move)));
+        node_move = (t_move*)malloc(sizeof(t_move)*node->movelist_length+1);
+        for(int j=0 ; j<node->movelist_length ; j++){
+            node_move[j]=node->move[j];
+        }
+        printf("position: x=%d y=%d\n" , localisation.pos.x , localisation.pos.y);
+        node_move[node->movelist_length+1]=moveset[i];
+        printf("move from moveset chosen: %s\n" , getMoveAsString(node_move[node->movelist_length+1]));
         tmpnode.move = node_move;
         t_localisation next_localisation = move(localisation , *(node_move));
         if(0<=next_localisation.pos.x && next_localisation.pos.x<=map.x_max && 0<=next_localisation.pos.y && next_localisation.pos.y<=map.y_max){
             tmpnode.weight =  map.soils[next_localisation.pos.x][next_localisation.pos.y];
             tmpnode.child_amount = moveset_length-1;
+            tmpnode.movelist_length=node->movelist_length+1;
             node->childs[i]=tmpnode;
-            printf("new node: weight = %d , move = %s\n" , node->childs[i].weight , getMoveAsString(*(node->childs[i].move)));
-            if(moves_amount>0){
-                buildBranch(&(node->childs[i]) , removeMoveFromArray(moveset , *(node_move) , moveset_length) , moveset_length-1 , moves_amount-1 , next_localisation , map);
+            printf("new node: weight = %d , move = %s\n" , node->childs[i].weight , getMoveAsString(node->childs[i].move[node->childs[i].movelist_length]));
+            printf("moves amount = %d\n" , moves_amount);
+            if(moves_amount>1){
+                printf("coucou");
+                t_move* new_moveset = removeMoveFromArray(moveset , node->childs[i].move[node->childs[i].movelist_length], moveset_length);
+                printf("c'est moi");
+                displayMoveset(new_moveset , moveset_length-1);
+                buildBranch(&(node->childs[i]) , new_moveset , moveset_length-1 , moves_amount-1 , next_localisation , map);
             }
+        }
+        else{
+            printf("\nout of bounds\n");
         }
     }
 }
@@ -103,17 +121,34 @@ int getSmallestWeight(t_tree tree){
 }
 
 t_move* removeMoveFromArray(t_move* moveset , t_move move , int moveset_length){
-    int found = 0;
-    for (int i = 0; i < moveset_length; i++) {
-        if (found) {
-            moveset[i - 1] = moveset[i];
-        }
-        else if (moveset[i] == move) {
-            found = 1;
+    int i, j;
+    int trouve = 0;
+
+    // Parcourir la liste pour trouver la valeur à supprimer
+    for (i = 0; i < moveset_length; i++) {
+        printf("i = %d\n" , i);
+        if (getMoveAsString(moveset[i]) == getMoveAsString(move)) {
+            trouve = 1;
+            printf("trouvé");
+            // Décaler les éléments suivants vers la gauche
+            for (j = i; j < moveset_length - 1; j++) {
+                moveset[j] = moveset[j + 1];
+            }
+            // Réduire la taille de la liste
+            (moveset_length)--;
+            printf("realloc on moveset length: %d\n" , moveset_length);
+            moveset = (t_move*)realloc(moveset , sizeof(t_move)*moveset_length);
+            break;
         }
     }
-    if (found)
-        moveset_length--;
-    moveset = (t_move*)realloc(moveset , sizeof(t_move)*moveset_length);
+    printf("je vais me buter");
     return moveset;
+}
+
+void displayMoveset(t_move* moveset , int moveset_length){
+    printf("moveset: [ ");
+    for(int i=0 ; i<moveset_length-1 ; i++){
+        printf("%s , " , getMoveAsString(moveset[i]));
+    }
+    printf("%s ]\n" , getMoveAsString(moveset[moveset_length-1]));
 }
