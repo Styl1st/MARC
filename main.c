@@ -5,9 +5,10 @@
 #include "tree.h"
 #include "loc.h"
 #include "node.h"
+#include "queue.h"
 
 t_tree buildTree( int , int , t_localisation , t_map);
-t_tree buildBranch( t_node* , t_move* , int , int , t_localisation , t_map);
+void buildBranch( t_node* , t_move* , int , int , t_localisation , t_map);
 t_move* buildRandomMovesArray(int);
 t_move* removeMoveFromArray(t_move* , t_move , int);
 
@@ -19,7 +20,7 @@ int main() {
     // If either _WIN32 or _WIN64 is defined, it means we are on a Windows platform.
     // On Windows, file paths use backslashes (\), hence we use the appropriate file path for Windows.
 #if defined(_WIN32) || defined(_WIN64)
-    map = createMapFromFile("..\\maps\\example1.map");
+    map = createMapFromFile(".\\maps\\example1.map");
 #else
     map = createMapFromFile("../maps/example1.map");
 #endif
@@ -67,43 +68,48 @@ t_tree buildTree(int moveset_length , int moves_amount , t_localisation localisa
     tree.root = root;
     t_move* moveset = buildRandomMovesArray(moveset_length);
     buildBranch(&(tree.root) , moveset , moveset_length , moves_amount , localisation , map);
+    return tree;
 }
 
-t_tree buildBranch(t_node* node , t_move* moveset , int moveset_length , int moves_amount , t_localisation localisation , t_map map){
-    if(moveset_length!=0){
-        setChildren(node , moves_amount);
-        for(int i=0 ; i<moveset_length ; i++){
-            t_node tmpnode;
-            t_move node_move = moveset[rand()%moveset_length]; 
-            tmpnode.move = node_move;
-            t_localisation next_localisation = move(localisation , node_move);
-            tmpnode.weight =  map.soils[next_localisation.pos.x][next_localisation.pos.y];
-            node->childs[i]=tmpnode;
-            printf("\n moveset length: %d" , moveset_length);
-            printf("\nnew moveset generated");
+void buildBranch(t_node* node , t_move* moveset , int moveset_length , int moves_amount , t_localisation localisation , t_map map){
+    printf("\n");
+    setChildren(node , moveset_length);
+    for(int i=0 ; i<moveset_length ; i++){
+        printf("moveset length: %d\n" , moveset_length);
+        t_node tmpnode;
+        printf("node initilized\n");
+        t_move node_move = moveset[rand()%moveset_length]; 
+        printf("random move from moveset chosen: %s\n" , getMoveAsString(node_move));
+        tmpnode.move = node_move;
+        t_localisation next_localisation = move(localisation , node_move);
+        tmpnode.weight =  map.soils[next_localisation.pos.x][next_localisation.pos.y];
+        tmpnode.child_amount = moveset_length;
+        node->childs[i]=tmpnode;
+        printf("new node: weight = %d , move = %s\n" , node->childs[i].weight , getMoveAsString(node->childs[i].move));
+        if(moveset_length>1){
             buildBranch(&(node->childs[i]) , removeMoveFromArray(moveset , node_move , moveset_length) , moveset_length-1 , moves_amount-1 , next_localisation , map);
         }
     }
 }
 
+int getSmallestWeight(t_tree tree){
+    int smalless = tree.root.weight;
+    t_queue queue;
+    enqueue(queue , tree.root)
+}
+
 t_move* removeMoveFromArray(t_move* moveset , t_move move , int moveset_length){
-    if(moveset_length>1){
-        t_move* new_moveset = (t_move*)malloc(sizeof(t_move)*moveset_length-1);
-        int counter = 0;
-        int flag = 0;
-        printf("\n\n{new moveset prepared");
-        for(int i=0 ; i<moveset_length ; i++){
-            printf("\ni = %d ; counter = %d" , i , counter);
-            if(moveset[i]!=move||flag>=1){
-                new_moveset[counter]=moveset[i];
-                counter++;
-            }
-            if(moveset[i]==move){
-                flag++;
-            }
+    int found = 0;
+    for (int i = 0; i < moveset_length; i++) {
+        if (found) {
+            moveset[i - 1] = moveset[i];
         }
-        printf("\ndeleted %s from moveset}\n" , getMoveAsString(move));
-        return new_moveset;
+        else if (moveset[i] == move) {
+            found = 1;
+        }
     }
-    return NULL;
+    if (found)
+        moveset_length--;
+    moveset = (t_move*)realloc(moveset , sizeof(t_move)*moveset_length);
+    return moveset;
 }
