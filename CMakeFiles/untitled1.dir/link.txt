@@ -1,0 +1,1 @@
+/usr/bin/cc CMakeFiles/untitled1.dir/main.c.o CMakeFiles/untitled1.dir/loc.c.o CMakeFiles/untitled1.dir/moves.c.o CMakeFiles/untitled1.dir/map.c.o CMakeFiles/untitled1.dir/node.c.o CMakeFiles/untitled1.dir/queue.c.o CMakeFiles/untitled1.dir/stack.c.o -o untitled1

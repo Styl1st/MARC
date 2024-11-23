@@ -10,7 +10,10 @@ add_executable(untitled1 main.c
         moves.h
         map.c
         map.h
+        node.c
+        node.h
         queue.c
         queue.h
         stack.c
-        stack.h)
+        stack.h
+        tree.h)

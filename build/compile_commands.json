@@ -1,0 +1,44 @@
+[
+{
+  "directory": "/home/paradox/projet_MARC/build",
+  "command": "/usr/bin/gcc   -g -std=gnu11 -o CMakeFiles/untitled1.dir/main.c.o -c /home/paradox/projet_MARC/main.c",
+  "file": "/home/paradox/projet_MARC/main.c",
+  "output": "CMakeFiles/untitled1.dir/main.c.o"
+},
+{
+  "directory": "/home/paradox/projet_MARC/build",
+  "command": "/usr/bin/gcc   -g -std=gnu11 -o CMakeFiles/untitled1.dir/loc.c.o -c /home/paradox/projet_MARC/loc.c",
+  "file": "/home/paradox/projet_MARC/loc.c",
+  "output": "CMakeFiles/untitled1.dir/loc.c.o"
+},
+{
+  "directory": "/home/paradox/projet_MARC/build",
+  "command": "/usr/bin/gcc   -g -std=gnu11 -o CMakeFiles/untitled1.dir/moves.c.o -c /home/paradox/projet_MARC/moves.c",
+  "file": "/home/paradox/projet_MARC/moves.c",
+  "output": "CMakeFiles/untitled1.dir/moves.c.o"
+},
+{
+  "directory": "/home/paradox/projet_MARC/build",
+  "command": "/usr/bin/gcc   -g -std=gnu11 -o CMakeFiles/untitled1.dir/map.c.o -c /home/paradox/projet_MARC/map.c",
+  "file": "/home/paradox/projet_MARC/map.c",
+  "output": "CMakeFiles/untitled1.dir/map.c.o"
+},
+{
+  "directory": "/home/paradox/projet_MARC/build",
+  "command": "/usr/bin/gcc   -g -std=gnu11 -o CMakeFiles/untitled1.dir/node.c.o -c /home/paradox/projet_MARC/node.c",
+  "file": "/home/paradox/projet_MARC/node.c",
+  "output": "CMakeFiles/untitled1.dir/node.c.o"
+},
+{
+  "directory": "/home/paradox/projet_MARC/build",
+  "command": "/usr/bin/gcc   -g -std=gnu11 -o CMakeFiles/untitled1.dir/queue.c.o -c /home/paradox/projet_MARC/queue.c",
+  "file": "/home/paradox/projet_MARC/queue.c",
+  "output": "CMakeFiles/untitled1.dir/queue.c.o"
+},
+{
+  "directory": "/home/paradox/projet_MARC/build",
+  "command": "/usr/bin/gcc   -g -std=gnu11 -o CMakeFiles/untitled1.dir/stack.c.o -c /home/paradox/projet_MARC/stack.c",
+  "file": "/home/paradox/projet_MARC/stack.c",
+  "output": "CMakeFiles/untitled1.dir/stack.c.o"
+}
+]
