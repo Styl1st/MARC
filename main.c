@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include "map.h"
 #include "tree.h"
@@ -116,8 +117,36 @@ void buildBranch(t_node* node , t_move* moveset , int moveset_length , int moves
     }
 }
 
-int getSmallestWeight(t_tree tree){
-    int smalless = tree.root.weight;
+int getSmallestWeight(t_tree tree , int* minWeight){
+    if (tree.root==NULL) return;
+    t_node minNode;
+    // Si c'est une feuille
+    if (tree.root->left==NULL && tree.root->right==NULL) {
+        if (tree.root->weight < *minWeight) {
+            *minWeight = tree->root->weight;
+            minNode = tree.root;
+        }
+        return;
+    }
+
+    // Parcours des sous-arbres gauche et droit
+    trouverFeuilleMin(tree.root->left, minNode, minWeight);
+    trouverFeuilleMin(tree.root->right, minNode, minWeight);
+}
+
+// Fonction principale
+t_node *find_min_weight_leaf(t_tree *tree) {
+    if (!tree || !tree->root) {
+        return NULL; // Arbre vide
+    }
+
+    t_node *minNode = NULL;
+    int minWeight = INT_MAX; // Initialise avec un poids maximum
+
+    // Appel de la fonction récursive
+    trouverFeuilleMin(tree->root, &minNode, &minWeight);
+
+    return minNode; // Retourne le pointeur vers la feuille avec le poids minimum
 }
 
 t_move* removeMoveFromArray(t_move* moveset , t_move move , int moveset_length){
@@ -127,7 +156,7 @@ t_move* removeMoveFromArray(t_move* moveset , t_move move , int moveset_length){
     // Parcourir la liste pour trouver la valeur à supprimer
     for (i = 0; i < moveset_length; i++) {
         printf("i = %d\n" , i);
-        if (getMoveAsString(moveset[i]) == getMoveAsString(move)) {
+        if (strcmp(getMoveAsString(moveset[i]) , getMoveAsString(move))==0) {
             trouve = 1;
             printf("trouvé");
             // Décaler les éléments suivants vers la gauche
@@ -137,7 +166,11 @@ t_move* removeMoveFromArray(t_move* moveset , t_move move , int moveset_length){
             // Réduire la taille de la liste
             (moveset_length)--;
             printf("realloc on moveset length: %d\n" , moveset_length);
-            moveset = (t_move*)realloc(moveset , sizeof(t_move)*moveset_length);
+            t_move* new_moveset = (t_move*)realloc(moveset, sizeof(t_move)*(moveset_length));
+            if (new_moveset == NULL &&moveset_length > 0) {
+                printf("Erreur : realloc a échoué\n");
+                return moveset; // Retourne le tableau original pour éviter les pertes
+            }
             break;
         }
     }
