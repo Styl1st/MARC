@@ -66,6 +66,9 @@ t_tree buildTree(int moveset_length , int moves_amount , t_localisation localisa
     t_tree tree;
     t_node root;
     tree.root = root;
+    tree.root.child_amount = moveset_length;
+    tree.root.movelist_length = 0;
+    tree.root.weight = map.soils[localisation.pos.x][localisation.pos.y];
     t_move* moveset = buildRandomMovesArray(moveset_length);
     buildBranch(&(tree.root) , moveset , moveset_length , moves_amount , localisation , map);
     return tree;
@@ -78,24 +81,25 @@ void buildBranch(t_node* node , t_move* moveset , int moveset_length , int moves
         printf("moveset length: %d\n" , moveset_length);
         t_node tmpnode;
         printf("node initilized\n");
-        t_move node_move = moveset[rand()%moveset_length]; 
-        printf("random move from moveset chosen: %s\n" , getMoveAsString(node_move));
+        t_move* node_move;
+        node_move = (t_move*)malloc(sizeof(t_move)*node->movelist_length);
+        printf("random move from moveset chosen: %s\n" , getMoveAsString(*(node_move)));
         tmpnode.move = node_move;
-        t_localisation next_localisation = move(localisation , node_move);
-        tmpnode.weight =  map.soils[next_localisation.pos.x][next_localisation.pos.y];
-        tmpnode.child_amount = moveset_length;
-        node->childs[i]=tmpnode;
-        printf("new node: weight = %d , move = %s\n" , node->childs[i].weight , getMoveAsString(node->childs[i].move));
-        if(moveset_length>1){
-            buildBranch(&(node->childs[i]) , removeMoveFromArray(moveset , node_move , moveset_length) , moveset_length-1 , moves_amount-1 , next_localisation , map);
+        t_localisation next_localisation = move(localisation , *(node_move));
+        if(0<=next_localisation.pos.x && next_localisation.pos.x<=map.x_max && 0<=next_localisation.pos.y && next_localisation.pos.y<=map.y_max){
+            tmpnode.weight =  map.soils[next_localisation.pos.x][next_localisation.pos.y];
+            tmpnode.child_amount = moveset_length-1;
+            node->childs[i]=tmpnode;
+            printf("new node: weight = %d , move = %s\n" , node->childs[i].weight , getMoveAsString(*(node->childs[i].move)));
+            if(moves_amount>0){
+                buildBranch(&(node->childs[i]) , removeMoveFromArray(moveset , *(node_move) , moveset_length) , moveset_length-1 , moves_amount-1 , next_localisation , map);
+            }
         }
     }
 }
 
 int getSmallestWeight(t_tree tree){
     int smalless = tree.root.weight;
-    t_queue queue;
-    enqueue(queue , tree.root)
 }
 
 t_move* removeMoveFromArray(t_move* moveset , t_move move , int moveset_length){

@@ -5,7 +5,9 @@
 
 typedef struct s_node{
     int weight;
-    t_move move;
+    t_move* move;
+    int movelist_length;
+    int child_amount;
     struct s_node* childs;
 } t_node;
 
