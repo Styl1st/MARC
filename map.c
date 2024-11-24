@@ -9,33 +9,13 @@
 #include "loc.h"
 #include "queue.h"
 
-/* prototypes of local functions */
-/* local functions are used only in this file, as helper functions */
-
-/**
- * @brief :  function to get the position of the base station
- * @param map : the map
- * @return : the position of the base station
- */
-t_position getBaseStationPosition(t_map);
-
-/**
- * @brief : function to calculate costs of the map  from the base station
- * @param map : the map
- * @return none
- */
-void calculateCosts(t_map);
-
-/**
- * @brief : function to remove 'false' crevasses costs from the costs array
- * @param map : the map
- * @return none
- */
-void removeFalseCrevasses(t_map);
+static t_position getBaseStationPosition(t_map map);
+static void calculateCosts(t_map map);
+static void removeFalseCrevasses(t_map map);
 
 /* definition of local functions */
 
-t_position getBaseStationPosition(t_map map)
+static t_position getBaseStationPosition(t_map map)
 {
     t_position pos;
     int i = 0;
@@ -64,19 +44,19 @@ t_position getBaseStationPosition(t_map map)
     return pos;
 }
 
-void removeFalseCrevasses(t_map map)
+static void removeFalseCrevasses(t_map map)
 {
     // step 1 : find the minimal cost > 10000 in the costs array where the soil is not a crevasse
-    int over=0;
+    int over = 0;
     int imin, jmin;
     while (!over)
     {
         int min_cost = COST_UNDEF;
         imin = map.y_max;
         jmin = map.x_max;
-        for (int i=0; i<map.y_max; i++)
+        for (int i = 0; i < map.y_max; i++)
         {
-            for (int j=0; j<map.x_max; j++)
+            for (int j = 0; j < map.x_max; j++)
             {
                 if (map.soils[i][j] != CREVASSE && map.costs[i][j] > 10000 && map.costs[i][j] < min_cost)
                 {
@@ -124,7 +104,7 @@ void removeFalseCrevasses(t_map map)
     }
 }
 
-void calculateCosts(t_map map)
+static void calculateCosts(t_map map)
 {
     t_position baseStation = getBaseStationPosition(map);
     //create a queue to store the positions to visit
@@ -187,10 +167,8 @@ void calculateCosts(t_map map)
             enqueue(&queue, dp);
         }
     }
-
-
-    return;
 }
+
 /* definition of exported functions */
 
 t_map createMapFromFile(char *filename)
@@ -228,7 +206,6 @@ t_map createMapFromFile(char *filename)
     }
     for (int i = 0; i < ydim; i++)
     {
-
         // parse the line to get the values : 0 = BASE_STATION, 1 = PLAIN, 2 = ERG, 3 = REG, 4 = CREVASSE
         // values are separated by spaces, so we use sscanf with %d to get the values
         for (int j = 0; j < xdim; j++)
@@ -268,7 +245,7 @@ void displayMap(t_map map)
                 switch (map.soils[i][j])
                 {
                     case BASE_STATION:
-                        if (rep==1)
+                        if (rep == 1)
                         {
                             strcpy(c, " B ");
                         }
@@ -287,7 +264,7 @@ void displayMap(t_map map)
                         strcpy(c, "^^^");
                         break;
                     case CREVASSE:
-                        sprintf(c, "%c%c%c",219,219,219);
+                        sprintf(c, "%c%c%c", 219, 219, 219);
                         break;
                     default:
                         strcpy(c, "???");
@@ -297,7 +274,6 @@ void displayMap(t_map map)
             }
             printf("\n");
         }
-
     }
     return;
 }

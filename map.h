@@ -47,7 +47,7 @@ t_map createMapFromFile(char *);
  * @param none
  * @return a standard map
  */
- t_map createTrainingMap();
+t_map createTrainingMap();
 
 /**
  * @brief display the map with characters
