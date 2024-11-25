@@ -10,9 +10,12 @@
 
 t_tree buildTree( int , int , t_localisation , t_map);
 void buildBranch( t_node* , t_move* , int , int , t_localisation , t_map);
-t_move* buildRandomMovesArray(int);
+t_move* getRandomMoves(int);
 t_move* removeMoveFromArray(t_move* , t_move , int);
 void displayMoveset(t_move* , int);
+t_tree sampleTree();
+t_move* getLowestWeightMove(t_tree*);
+void findLowestWeightMove(t_node*, int* , t_move**);
 
 
 int main() {
@@ -50,19 +53,10 @@ int main() {
         printf("\n");
     }
     buildTree(5 , 3 , rover , map);
+    t_tree sample_tree = sampleTree();
+    t_move* path_to_lowest = getLowestWeightMove(&sample_tree);
     displayMap(map);
     return 0;
-}
-
-t_move* buildRandomMovesArray(int array_length){
-    t_move moveset[7] = { F_10, F_20, F_30, B_10, T_LEFT, T_RIGHT, U_TURN };
-    t_move* result;
-    srand(time(NULL));
-    result= (t_move*)malloc(array_length*sizeof(t_move));
-    for(int i = 0; i<array_length ; i++){
-        result[i]=moveset[rand()%array_length];
-    }
-    return result;
 }
 
 t_tree buildTree(int moveset_length , int moves_amount , t_localisation localisation , t_map map){
@@ -72,7 +66,7 @@ t_tree buildTree(int moveset_length , int moves_amount , t_localisation localisa
     tree.root.child_amount = moveset_length;
     tree.root.movelist_length = 0;
     tree.root.weight = map.soils[localisation.pos.x][localisation.pos.y];
-    t_move* moveset = buildRandomMovesArray(moveset_length);
+    t_move* moveset = getRandomMoves(moveset_length);
     buildBranch(&(tree.root) , moveset , moveset_length , moves_amount , localisation , map);
     return tree;
 }
@@ -81,101 +75,71 @@ void buildBranch(t_node* node , t_move* moveset , int moveset_length , int moves
     
     setChildren(node , moveset_length);
     for(int i=0 ; i<moveset_length ; i++){
-        printf("\n\n\n");
-        displayMoveset(moveset , moveset_length);
-        printf("moveset length: %d\n" , moveset_length);
+        
+        printf("temp node initialised\n");
         t_node tmpnode;
-        printf("node initilized\n");
+
+        //préparation de la liste de t_move
         t_move* node_move;
         node_move = (t_move*)malloc(sizeof(t_move)*node->movelist_length+1);
         for(int j=0 ; j<node->movelist_length ; j++){
             node_move[j]=node->move[j];
         }
-        printf("position: x=%d y=%d\n" , localisation.pos.x , localisation.pos.y);
         node_move[node->movelist_length+1]=moveset[i];
-        printf("move from moveset chosen: %s\n" , getMoveAsString(node_move[node->movelist_length+1]));
         tmpnode.move = node_move;
+        tmpnode.movelist_length=node->movelist_length+1;
+        printf("move array prepared\n");
+        //fin de preparation
+
         t_localisation next_localisation = move(localisation , *(node_move));
         if(0<=next_localisation.pos.x && next_localisation.pos.x<=map.x_max && 0<=next_localisation.pos.y && next_localisation.pos.y<=map.y_max){
+            printf("move in bounds\n");
             tmpnode.weight =  map.soils[next_localisation.pos.x][next_localisation.pos.y];
             tmpnode.child_amount = moveset_length-1;
-            tmpnode.movelist_length=node->movelist_length+1;
             node->childs[i]=tmpnode;
-            printf("new node: weight = %d , move = %s\n" , node->childs[i].weight , getMoveAsString(node->childs[i].move[node->childs[i].movelist_length]));
-            printf("moves amount = %d\n" , moves_amount);
             if(moves_amount>1){
-                printf("coucou");
+                printf("prepare recursion\n");
                 t_move* new_moveset = removeMoveFromArray(moveset , node->childs[i].move[node->childs[i].movelist_length], moveset_length);
-                printf("c'est moi");
-                displayMoveset(new_moveset , moveset_length-1);
+                printf("\n\n\n");
                 buildBranch(&(node->childs[i]) , new_moveset , moveset_length-1 , moves_amount-1 , next_localisation , map);
+            }
+            else{
+                printf("out of moves\n\n\n\n");
             }
         }
         else{
-            printf("\nout of bounds\n");
+            printf("\nout of bounds\n\n\n\n");
         }
     }
-}
-
-int getSmallestWeight(t_tree tree , int* minWeight){
-    if (tree.root==NULL) return;
-    t_node minNode;
-    // Si c'est une feuille
-    if (tree.root->left==NULL && tree.root->right==NULL) {
-        if (tree.root->weight < *minWeight) {
-            *minWeight = tree->root->weight;
-            minNode = tree.root;
-        }
-        return;
-    }
-
-    // Parcours des sous-arbres gauche et droit
-    trouverFeuilleMin(tree.root->left, minNode, minWeight);
-    trouverFeuilleMin(tree.root->right, minNode, minWeight);
-}
-
-// Fonction principale
-t_node *find_min_weight_leaf(t_tree *tree) {
-    if (!tree || !tree->root) {
-        return NULL; // Arbre vide
-    }
-
-    t_node *minNode = NULL;
-    int minWeight = INT_MAX; // Initialise avec un poids maximum
-
-    // Appel de la fonction récursive
-    trouverFeuilleMin(tree->root, &minNode, &minWeight);
-
-    return minNode; // Retourne le pointeur vers la feuille avec le poids minimum
 }
 
 t_move* removeMoveFromArray(t_move* moveset , t_move move , int moveset_length){
     int i, j;
+    t_move* new_moveset = (t_move*)malloc(sizeof(t_move)*moveset_length);
+    for(int j = 0 ; j<moveset_length ; j++){
+        new_moveset[j] = moveset[j];
+    }
     int trouve = 0;
-
-    // Parcourir la liste pour trouver la valeur à supprimer
     for (i = 0; i < moveset_length; i++) {
         printf("i = %d\n" , i);
-        if (strcmp(getMoveAsString(moveset[i]) , getMoveAsString(move))==0) {
+        if (strcmp(getMoveAsString(new_moveset[i]) , getMoveAsString(move))==0) {
             trouve = 1;
-            printf("trouvé");
-            // Décaler les éléments suivants vers la gauche
+            printf("element found\n");
             for (j = i; j < moveset_length - 1; j++) {
-                moveset[j] = moveset[j + 1];
+                new_moveset[j] = new_moveset[j + 1];
             }
-            // Réduire la taille de la liste
             (moveset_length)--;
+            printf("new moveset pointer initialised\n");
             printf("realloc on moveset length: %d\n" , moveset_length);
-            t_move* new_moveset = (t_move*)realloc(moveset, sizeof(t_move)*(moveset_length));
+            new_moveset = (t_move*)realloc(new_moveset, sizeof(t_move)*(moveset_length));
+            printf("realloc succesfull\n");
             if (new_moveset == NULL &&moveset_length > 0) {
-                printf("Erreur : realloc a échoué\n");
-                return moveset; // Retourne le tableau original pour éviter les pertes
+                exit(EXIT_FAILURE);
             }
             break;
         }
     }
-    printf("je vais me buter");
-    return moveset;
+    return new_moveset;
 }
 
 void displayMoveset(t_move* moveset , int moveset_length){
@@ -184,4 +148,59 @@ void displayMoveset(t_move* moveset , int moveset_length){
         printf("%s , " , getMoveAsString(moveset[i]));
     }
     printf("%s ]\n" , getMoveAsString(moveset[moveset_length-1]));
+}
+
+t_tree sampleTree(){
+    t_tree sample_tree;
+    t_node root;
+    srand(time(NULL));
+    root.weight=rand()%20;
+    printf("root weight = %d\n" , root.weight);
+    setChildren(&root , 4);
+    t_move* moves = getRandomMoves(4);
+    for(int i=0 ; i<4 ; i++){
+        t_node child_node;
+        child_node.move = (t_move*)malloc(sizeof(t_move));
+        child_node.move[0] = moves[i];
+        child_node.movelist_length = 1;
+        child_node.child_amount=0;
+        child_node.weight = (rand()%19)+1;
+        printf("%d) child node prepared: weight=%d\n" , i , child_node.weight);
+        root.childs[i] = child_node;
+        printf("child node assigned\n");
+    }
+    sample_tree.root = root;
+    return sample_tree;
+}
+
+void findLowestWeightMove(t_node* node, int* min_weight , t_move** best_move) {
+    if (node == NULL) {
+        return NULL; 
+    }
+    printf("child amount = %d\n" , node->child_amount);
+    printf("node weight = %d\nmin weight = %d\n" , node->weight , *min_weight);
+    if (node->weight < *min_weight) {
+        printf("trying to modify pointer\n");
+        *min_weight = node->weight;
+        best_move = &(node->move); 
+        printf("pointer modified\n");
+    }
+    if(node->child_amount!=0){
+        for (int i = 0; i < node->child_amount; i++) {
+            printf("i=%d\n" , i);
+            findLowestWeightMove(&node->childs[i], min_weight , best_move);
+        }
+    }
+}
+
+
+t_move* getLowestWeightMove(t_tree* tree) {
+    if (tree == NULL || tree->root.child_amount == 0) {
+        return NULL; 
+    }
+    t_move** best_move = NULL;
+    printf("initialised best move pointer\n");
+    int min_weight = tree->root.weight;
+    findLowestWeightMove(&tree->root, &min_weight , best_move);
+    return *(best_move);
 }
